@@ -14,8 +14,8 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class Breakout extends GraphicsProgram {
-  private static final int WIDTH = 400;
-  private static final int HEIGHT = 600;
+  private static final int WIDTH = 600;
+  private static final int HEIGHT = 800;
   private static final int PADDLE_WIDTH = 60;
   private static final int PADDLE_HEIGHT = 10;
   private static final int PADDLE_Y_OFFSET = 30;
@@ -29,7 +29,7 @@ public class Breakout extends GraphicsProgram {
   private static final int BALL_RADIUS = BALL_DIAMETER / 2;
   private static final int BRICK_Y_OFFSET = 70;
   private static final int TURNS = 3;
-  private static final int DELAY = 10;
+  private static final int DELAY = 5;
 
   public static void main(String[] args) {
     String[] sizeArgs = { "width=" + WIDTH, "height=" + HEIGHT };
@@ -42,20 +42,12 @@ public class Breakout extends GraphicsProgram {
     drawPaddle();
     drawBall();
 
-    mouseXLabel = new GLabel("");
-    mouseXLabel.setFont("Times New Roman-12");
-    add(mouseXLabel, WIDTH - 25, 15);
-
     addMouseListeners();
     addKeyListeners();
   }
 
   public void run() {
-    int turnsLeft = TURNS;
-    vx = rgen.nextDouble(2.0, 3.0);
-    vy = vx;
-    if (rgen.nextBoolean(0.5)) vx = -vx;
-    while(turnsLeft > 0) {
+    while(true) {
       ball.move(vx, vy);
       checkForCollision();
       pause(DELAY);
@@ -92,6 +84,10 @@ public class Breakout extends GraphicsProgram {
   }
 
   private void drawBall() {
+    vx = rgen.nextDouble(2.0, 3.0);
+    vy = vx;
+    if (rgen.nextBoolean(0.5)) vx = -vx;
+
     int x = WIDTH / 2;
     int y = HEIGHT / 2;
     ball = new GOval(x, y, BALL_DIAMETER, BALL_DIAMETER);
@@ -100,10 +96,7 @@ public class Breakout extends GraphicsProgram {
   }
 
   public void mouseMoved(MouseEvent e) {
-    int mouseX = e.getX();
-    mouseXLabel.setLabel(Integer.toString(mouseX));
-
-    double x = mouseX - PADDLE_WIDTH / 2;
+    double x = e.getX() - PADDLE_WIDTH / 2;
     double y = paddle.getY();
 
     x = x < 0 ? 0 : x;
@@ -117,10 +110,11 @@ public class Breakout extends GraphicsProgram {
     double ballX = ball.getX() + BALL_RADIUS;
     double ballY = ball.getY() + BALL_RADIUS;
 
-    int d = BALL_RADIUS + 1;
+    double r = BALL_RADIUS + 0.1;
+    double h = Math.sqrt(2 * BALL_RADIUS * BALL_RADIUS) + 0.1;
 
-    int[] x = {  d,  d,  0, -d, -d, -d,  0,  d };
-    int[] y = {  0,  d,  d,  d,  0, -d, -d, -d };
+    double[] x = {  r,  h,  0, -h, -r, -h,  0,  h };
+    double[] y = {  0,  h,  r,  h,  0, -h, -r, -h };
 
     for (int i = 0; i < x.length; i++) {
       collider = getElementAt(ballX + x[i], ballY + y[i]);
@@ -137,17 +131,29 @@ public class Breakout extends GraphicsProgram {
     if (ball.getY() < 0)
       vy = -vy;
 
+    if (ball.getY() > HEIGHT) {
+      // handle end of turn
+    }
+
     // handle objects
     GObject collider = getCollidingObject();
     if (collider != null) {
-      if (collider != paddle) remove(collider);
+      if (collider == paddle) {
+        reverseBallXVelocity();
+      } else {
+        remove(collider);
+      }
       vy = -vy;
     }
+  }
 
+  private void reverseBallXVelocity() {
+    if ((paddle.getX() <= ball.getX() && ball.getX() <= paddle.getX() + PADDLE_WIDTH / 3 && vx > 0) ||
+      (paddle.getX() + 2 * PADDLE_WIDTH / 3 <= ball.getX() && ball.getX() <= paddle.getX() + PADDLE_WIDTH && vx < 0))
+      vx = -vx;
   }
 
   /* Private instance variables */
-  private GLabel mouseXLabel;
   private GRect paddle;
   private GOval ball;
   private double vx, vy;
