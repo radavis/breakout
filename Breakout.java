@@ -26,6 +26,7 @@ public class Breakout extends GraphicsProgram {
     WIDTH / BRICKS_PER_ROW - BRICK_SEP;
   private static final int BRICK_HEIGHT = 8;
   private static final int BALL_DIAMETER = 10;
+  private static final int BALL_RADIUS = BALL_DIAMETER / 2;
   private static final int BRICK_Y_OFFSET = 70;
   private static final int TURNS = 3;
   private static final int DELAY = 30;
@@ -36,6 +37,7 @@ public class Breakout extends GraphicsProgram {
   }
 
   public void init() {
+    removeAll();
     drawBricks();
     drawPaddle();
     drawBall();
@@ -50,7 +52,7 @@ public class Breakout extends GraphicsProgram {
 
   public void run() {
     int turnsLeft = TURNS;
-    vx = rgen.nextDouble(1.0, 3.0);
+    vx = rgen.nextDouble(2.0, 3.0);
     vy = vx;
     if (rgen.nextBoolean(0.5)) vx = -vx;
     while(turnsLeft > 0) {
@@ -110,10 +112,23 @@ public class Breakout extends GraphicsProgram {
   }
 
   private void checkForCollision() {
+    // handle walls
     if (ball.getX() < 0 || ball.getX() > WIDTH - BALL_DIAMETER)
       vx = -vx;
-    if (ball.getY() < 0 || ball.getY() > HEIGHT - BALL_DIAMETER)
+    if (ball.getY() < 0)
       vy = -vy;
+
+    // handle objects
+    double ballX = ball.getX() + BALL_RADIUS;
+    double ballY = ball.getY() + BALL_RADIUS;
+
+    int offset = BALL_RADIUS + 1;
+    GObject collider;
+    collider = getElementAt(ballX - offset, ballY);
+    if (collider != null) {
+      if (collider != paddle) remove(collider);
+      vy = -vy;
+    }
   }
 
   /* Private instance variables */
