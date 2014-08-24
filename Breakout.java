@@ -25,9 +25,10 @@ public class Breakout extends GraphicsProgram {
   private static final int BRICK_WIDTH =
     WIDTH / BRICKS_PER_ROW - BRICK_SEP;
   private static final int BRICK_HEIGHT = 8;
-  private static final int BALL_RADIUS = 10;
+  private static final int BALL_DIAMETER = 10;
   private static final int BRICK_Y_OFFSET = 70;
   private static final int TURNS = 3;
+  private static final int DELAY = 30;
 
   public static void main(String[] args) {
     String[] sizeArgs = { "width=" + WIDTH, "height=" + HEIGHT };
@@ -37,6 +38,7 @@ public class Breakout extends GraphicsProgram {
   public void init() {
     drawBricks();
     drawPaddle();
+    drawBall();
 
     mouseXLabel = new GLabel("");
     mouseXLabel.setFont("Times New Roman-12");
@@ -48,8 +50,13 @@ public class Breakout extends GraphicsProgram {
 
   public void run() {
     int turnsLeft = TURNS;
+    vx = rgen.nextDouble(1.0, 3.0);
+    vy = vx;
+    if (rgen.nextBoolean(0.5)) vx = -vx;
     while(turnsLeft > 0) {
-      //movePaddle();
+      ball.move(vx, vy);
+      checkForCollision();
+      pause(DELAY);
     }
   }
 
@@ -82,6 +89,14 @@ public class Breakout extends GraphicsProgram {
     add(paddle);
   }
 
+  private void drawBall() {
+    int x = WIDTH / 2;
+    int y = HEIGHT / 2;
+    ball = new GOval(x, y, BALL_DIAMETER, BALL_DIAMETER);
+    ball.setFilled(true);
+    add(ball);
+  }
+
   public void mouseMoved(MouseEvent e) {
     int mouseX = e.getX();
     mouseXLabel.setLabel(Integer.toString(mouseX));
@@ -94,7 +109,17 @@ public class Breakout extends GraphicsProgram {
     paddle.setLocation(x, y);
   }
 
+  private void checkForCollision() {
+    if (ball.getX() < 0 || ball.getX() > WIDTH - BALL_DIAMETER)
+      vx = -vx;
+    if (ball.getY() < 0 || ball.getY() > HEIGHT - BALL_DIAMETER)
+      vy = -vy;
+  }
+
   /* Private instance variables */
   private GLabel mouseXLabel;
   private GRect paddle;
+  private GOval ball;
+  private double vx, vy;
+  private RandomGenerator rgen = new RandomGenerator();
 }
