@@ -29,7 +29,7 @@ public class Breakout extends GraphicsProgram {
   private static final int BALL_RADIUS = BALL_DIAMETER / 2;
   private static final int BRICK_Y_OFFSET = 70;
   private static final int TURNS = 3;
-  private static final int DELAY = 30;
+  private static final int DELAY = 10;
 
   public static void main(String[] args) {
     String[] sizeArgs = { "width=" + WIDTH, "height=" + HEIGHT };
@@ -111,6 +111,25 @@ public class Breakout extends GraphicsProgram {
     paddle.setLocation(x, y);
   }
 
+  private GObject getCollidingObject() {
+    GObject collider;
+
+    double ballX = ball.getX() + BALL_RADIUS;
+    double ballY = ball.getY() + BALL_RADIUS;
+
+    int d = BALL_RADIUS + 1;
+
+    int[] x = {  d,  d,  0, -d, -d, -d,  0,  d };
+    int[] y = {  0,  d,  d,  d,  0, -d, -d, -d };
+
+    for (int i = 0; i < x.length; i++) {
+      collider = getElementAt(ballX + x[i], ballY + y[i]);
+      if (collider != null) return collider;
+    }
+
+    return null;
+  }
+
   private void checkForCollision() {
     // handle walls
     if (ball.getX() < 0 || ball.getX() > WIDTH - BALL_DIAMETER)
@@ -119,16 +138,12 @@ public class Breakout extends GraphicsProgram {
       vy = -vy;
 
     // handle objects
-    double ballX = ball.getX() + BALL_RADIUS;
-    double ballY = ball.getY() + BALL_RADIUS;
-
-    int offset = BALL_RADIUS + 1;
-    GObject collider;
-    collider = getElementAt(ballX - offset, ballY);
+    GObject collider = getCollidingObject();
     if (collider != null) {
       if (collider != paddle) remove(collider);
       vy = -vy;
     }
+
   }
 
   /* Private instance variables */
