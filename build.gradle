@@ -1,0 +1,26 @@
+apply plugin: "java"
+apply plugin: "eclipse"
+apply plugin: "idea"
+apply plugin: "application"
+
+mainClassName = "Breakout"
+
+repositories {
+    mavenCentral()
+
+    flatDir {
+        dirs "libs"
+    }
+}
+
+dependencies {
+    compile name: "acm"
+    testCompile "junit:junit:4.12"
+}
+
+test {
+    testLogging {
+        exceptionFormat = 'full'
+        events = ["passed", "failed", "skipped"]
+    }
+}
